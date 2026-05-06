@@ -1,31 +1,42 @@
 'use client'
 
 import { useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Clock, CheckCircle, Edit, Trash2, Plus, Sparkles, Send, Calendar } from 'lucide-react'
+import { Clock, CheckCircle, Edit, Trash2, Plus, Sparkles, Send } from 'lucide-react'
 import { store } from '@/lib/store'
+import { PlatformIcon } from '@/components/icons/platform-icons'
 import type { ContentItem, Platform } from '@/lib/types'
 
 const platformColors: Record<Platform, string> = {
-  tiktok: 'bg-[#00f2ea]/20 text-[#00f2ea]',
-  instagram: 'bg-pink-500/20 text-pink-400',
-  youtube: 'bg-red-500/20 text-red-400',
-  twitter: 'bg-foreground/20 text-foreground',
-  facebook: 'bg-blue-500/20 text-blue-400',
-  spotify: 'bg-green-500/20 text-green-400',
+  tiktok: 'bg-[#00f2ea]/15 text-[#00f2ea] border-[#00f2ea]/20',
+  instagram: 'bg-pink-500/15 text-pink-400 border-pink-500/20',
+  youtube: 'bg-red-500/15 text-red-400 border-red-500/20',
+  twitter: 'bg-foreground/15 text-foreground border-foreground/20',
+  facebook: 'bg-blue-500/15 text-blue-400 border-blue-500/20',
+  spotify: 'bg-green-500/15 text-green-400 border-green-500/20',
+}
+
+const platformLabels: Record<Platform, string> = {
+  tiktok: 'TikTok',
+  instagram: 'Instagram',
+  youtube: 'YouTube',
+  twitter: 'X / Twitter',
+  facebook: 'Facebook',
+  spotify: 'Spotify',
 }
 
 const statusConfig = {
-  pending: { label: 'Pending', color: 'bg-warning/20 text-warning' },
-  approved: { label: 'Approved', color: 'bg-success/20 text-success' },
-  posted: { label: 'Posted', color: 'bg-primary/20 text-primary' },
-  failed: { label: 'Failed', color: 'bg-destructive/20 text-destructive' },
+  pending: { label: 'Pending', color: 'bg-warning/15 text-warning border-warning/20' },
+  approved: { label: 'Approved', color: 'bg-success/15 text-success border-success/20' },
+  posted: { label: 'Posted', color: 'bg-primary/15 text-primary border-primary/20' },
+  failed: { label: 'Failed', color: 'bg-destructive/15 text-destructive border-destructive/20' },
 }
 
 export default function ContentPage() {
@@ -70,9 +81,7 @@ export default function ContentPage() {
 
   const handleGenerateAI = async () => {
     setIsGenerating(true)
-    // Simulate AI generation
     await new Promise((r) => setTimeout(r, 2000))
-    
     const platforms: Platform[] = ['tiktok', 'instagram', 'twitter']
     platforms.forEach((platform) => {
       store.addContent({
@@ -84,7 +93,6 @@ export default function ContentPage() {
         status: 'pending',
       })
     })
-    
     setContentQueue([...store.getContentQueue()])
     setIsGenerating(false)
   }
@@ -131,12 +139,14 @@ export default function ContentPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="tiktok">TikTok</SelectItem>
-                      <SelectItem value="instagram">Instagram</SelectItem>
-                      <SelectItem value="youtube">YouTube</SelectItem>
-                      <SelectItem value="twitter">Twitter/X</SelectItem>
-                      <SelectItem value="facebook">Facebook</SelectItem>
-                      <SelectItem value="spotify">Spotify</SelectItem>
+                      {(Object.keys(platformLabels) as Platform[]).map((p) => (
+                        <SelectItem key={p} value={p}>
+                          <div className="flex items-center gap-2">
+                            <PlatformIcon platform={p} size={14} />
+                            {platformLabels[p]}
+                          </div>
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -168,17 +178,19 @@ export default function ContentPage() {
       {/* Filters */}
       <div className="flex flex-wrap gap-2">
         <Select value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
-          <SelectTrigger className="w-[150px]">
+          <SelectTrigger className="w-[160px]">
             <SelectValue placeholder="Platform" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Platforms</SelectItem>
-            <SelectItem value="tiktok">TikTok</SelectItem>
-            <SelectItem value="instagram">Instagram</SelectItem>
-            <SelectItem value="youtube">YouTube</SelectItem>
-            <SelectItem value="twitter">Twitter/X</SelectItem>
-            <SelectItem value="facebook">Facebook</SelectItem>
-            <SelectItem value="spotify">Spotify</SelectItem>
+            {(Object.keys(platformLabels) as Platform[]).map((p) => (
+              <SelectItem key={p} value={p}>
+                <div className="flex items-center gap-2">
+                  <PlatformIcon platform={p} size={14} />
+                  {platformLabels[p]}
+                </div>
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}>
@@ -196,67 +208,86 @@ export default function ContentPage() {
       </div>
 
       {/* Content Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {filteredContent.map((item) => (
-          <Card key={item.id}>
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between gap-2">
-                <Badge className={platformColors[item.platform]} variant="secondary">
-                  {item.platform}
-                </Badge>
-                <Badge className={statusConfig[item.status].color} variant="secondary">
-                  {statusConfig[item.status].label}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-foreground">{item.content}</p>
-              <div className="flex flex-wrap gap-1">
-                {item.hashtags.map((tag) => (
-                  <span key={tag} className="text-xs text-primary">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-              <div className="flex items-center justify-between border-t border-border pt-4">
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <Clock className="h-3 w-3" />
-                  {formatTime(item.scheduledFor)}
-                </div>
-                <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  {item.status === 'pending' && (
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-success" onClick={() => handleApprove(item.id)}>
-                      <CheckCircle className="h-4 w-4" />
-                    </Button>
-                  )}
-                  {item.status === 'approved' && (
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary">
-                      <Send className="h-4 w-4" />
-                    </Button>
-                  )}
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(item.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <motion.div layout className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <AnimatePresence mode="popLayout">
+          {filteredContent.map((item) => (
+            <motion.div
+              key={item.id}
+              layout
+              exit={{ opacity: 0, scale: 0.92 }}
+              transition={{ duration: 0.22, ease: 'easeOut' }}
+            >
+              <Card className="h-full hover:border-border/80 transition-colors">
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <Badge
+                      className={`flex items-center gap-1.5 border ${platformColors[item.platform]}`}
+                      variant="secondary"
+                    >
+                      <PlatformIcon platform={item.platform} size={11} />
+                      {platformLabels[item.platform]}
+                    </Badge>
+                    <Badge
+                      className={`border ${statusConfig[item.status].color}`}
+                      variant="secondary"
+                    >
+                      {statusConfig[item.status].label}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-foreground leading-relaxed">{item.content}</p>
+                  <div className="flex flex-wrap gap-1">
+                    {item.hashtags.map((tag) => (
+                      <span key={tag} className="text-xs text-primary font-medium">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-between border-t border-border pt-4">
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Clock className="h-3 w-3" />
+                      {formatTime(item.scheduledFor)}
+                    </div>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-foreground">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      {item.status === 'pending' && (
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-success hover:text-success" onClick={() => handleApprove(item.id)}>
+                          <CheckCircle className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {item.status === 'approved' && (
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:text-primary">
+                          <Send className="h-4 w-4" />
+                        </Button>
+                      )}
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDelete(item.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </motion.div>
 
       {filteredContent.length === 0 && (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <p className="mb-4 text-muted-foreground">No content found</p>
-            <Button onClick={handleGenerateAI}>
-              <Sparkles className="mr-2 h-4 w-4" />
-              Generate Content with AI
-            </Button>
-          </CardContent>
-        </Card>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-16">
+              <Sparkles className="mb-4 h-10 w-10 text-muted-foreground/40" />
+              <p className="mb-4 text-muted-foreground">No content found</p>
+              <Button onClick={handleGenerateAI} disabled={isGenerating}>
+                <Sparkles className="mr-2 h-4 w-4" />
+                Generate Content with AI
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
       )}
     </div>
   )

@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -60,11 +61,30 @@ const features = [
   },
 ]
 
+const fadeUp = {
+  hidden: { opacity: 0, y: 24 },
+  visible: (i = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+  }),
+}
+
+const stagger = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.07 } },
+}
+
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border">
+      <motion.header
+        initial={{ opacity: 0, y: -16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+        className="border-b border-border"
+      >
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
@@ -73,13 +93,13 @@ export default function LandingPage() {
             <span className="text-lg font-semibold">SoundWave AI</span>
           </div>
           <nav className="hidden items-center gap-6 md:flex">
-            <Link href="#features" className="text-sm text-muted-foreground hover:text-foreground">
+            <Link href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               Features
             </Link>
-            <Link href="#how-it-works" className="text-sm text-muted-foreground hover:text-foreground">
+            <Link href="#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               How It Works
             </Link>
-            <Link href="#pricing" className="text-sm text-muted-foreground hover:text-foreground">
+            <Link href="#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               Pricing
             </Link>
           </nav>
@@ -90,113 +110,189 @@ export default function LandingPage() {
             </Link>
           </Button>
         </div>
-      </header>
+      </motion.header>
 
       {/* Hero Section */}
       <section className="relative overflow-hidden py-20 md:py-32">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent" />
-        <div className="container mx-auto px-4 text-center">
-          <Badge variant="outline" className="mb-6">
-            <Zap className="mr-1 h-3 w-3 text-primary" />
-            AI-Powered Music Marketing
-          </Badge>
-          <h1 className="mx-auto max-w-4xl text-4xl font-bold tracking-tight text-balance md:text-6xl lg:text-7xl">
+        {/* Animated background orbs */}
+        <motion.div
+          className="absolute -top-40 left-1/4 h-96 w-96 rounded-full bg-primary/8 blur-3xl"
+          animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
+          transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <motion.div
+          className="absolute -bottom-20 right-1/4 h-80 w-80 rounded-full bg-chart-1/8 blur-3xl"
+          animate={{ scale: [1.1, 1, 1.1], opacity: [0.4, 0.7, 0.4] }}
+          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+        />
+
+        <div className="container relative mx-auto px-4 text-center">
+          <motion.div variants={fadeUp} custom={0} initial="hidden" animate="visible">
+            <Badge variant="outline" className="mb-6">
+              <Zap className="mr-1 h-3 w-3 text-primary" />
+              AI-Powered Music Marketing
+            </Badge>
+          </motion.div>
+
+          <motion.h1
+            variants={fadeUp}
+            custom={1}
+            initial="hidden"
+            animate="visible"
+            className="mx-auto max-w-4xl text-4xl font-bold tracking-tight text-balance md:text-6xl lg:text-7xl"
+          >
             Reach{' '}
             <span className="bg-gradient-to-r from-primary to-chart-1 bg-clip-text text-transparent">
               20 Million
             </span>{' '}
             People in 2 Weeks
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground text-pretty md:text-xl">
+          </motion.h1>
+
+          <motion.p
+            variants={fadeUp}
+            custom={2}
+            initial="hidden"
+            animate="visible"
+            className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground text-pretty md:text-xl"
+          >
             Autonomous AI agents that generate viral content, post across 6 platforms, and optimize your music marketing campaign 24/7 - without constant involvement.
-          </p>
-          <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-            <Button size="lg" asChild>
+          </motion.p>
+
+          <motion.div
+            variants={fadeUp}
+            custom={3}
+            initial="hidden"
+            animate="visible"
+            className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center"
+          >
+            <Button size="lg" asChild className="group">
               <Link href="/dashboard">
-                <Play className="mr-2 h-5 w-5" />
+                <Play className="mr-2 h-5 w-5 transition-transform group-hover:scale-110" />
                 Start Your Campaign
               </Link>
             </Button>
             <Button variant="outline" size="lg">
               Watch Demo
             </Button>
-          </div>
+          </motion.div>
 
           {/* Platform Pills */}
-          <div className="mt-12 flex flex-wrap items-center justify-center gap-3">
-            {platforms.map((platform) => (
-              <div
+          <motion.div
+            variants={stagger}
+            initial="hidden"
+            animate="visible"
+            className="mt-12 flex flex-wrap items-center justify-center gap-3"
+          >
+            {platforms.map((platform, i) => (
+              <motion.div
                 key={platform.name}
-                className="flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2"
+                variants={fadeUp}
+                custom={i}
+                whileHover={{ scale: 1.07, y: -2 }}
+                className="flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 cursor-default"
               >
                 <PlatformIcon platform={platform.platform} size={18} />
                 <span className="text-sm">{platform.name}</span>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Stats Section */}
       <section className="border-y border-border bg-card py-12">
-        <div className="container mx-auto grid gap-8 px-4 md:grid-cols-4">
-          <div className="text-center">
-            <p className="text-3xl font-bold text-primary md:text-4xl">24/7</p>
-            <p className="mt-1 text-sm text-muted-foreground">Autonomous Operation</p>
-          </div>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-primary md:text-4xl">6</p>
-            <p className="mt-1 text-sm text-muted-foreground">Platforms Supported</p>
-          </div>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-primary md:text-4xl">10-20</p>
-            <p className="mt-1 text-sm text-muted-foreground">AI Posts Per Day</p>
-          </div>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-primary md:text-4xl">&lt;30min</p>
-            <p className="mt-1 text-sm text-muted-foreground">Trend Response Time</p>
-          </div>
-        </div>
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-60px' }}
+          variants={stagger}
+          className="container mx-auto grid gap-8 px-4 md:grid-cols-4"
+        >
+          {[
+            { value: '24/7', label: 'Autonomous Operation' },
+            { value: '6', label: 'Platforms Supported' },
+            { value: '10-20', label: 'AI Posts Per Day' },
+            { value: '<30min', label: 'Trend Response Time' },
+          ].map((stat, i) => (
+            <motion.div key={stat.label} variants={fadeUp} custom={i} className="text-center">
+              <p className="text-3xl font-bold text-primary md:text-4xl">{stat.value}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{stat.label}</p>
+            </motion.div>
+          ))}
+        </motion.div>
       </section>
 
       {/* Features Section */}
       <section id="features" className="py-20 md:py-32">
         <div className="container mx-auto px-4">
-          <div className="text-center">
-            <Badge variant="outline" className="mb-4">Features</Badge>
-            <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-60px' }}
+            variants={stagger}
+            className="text-center"
+          >
+            <motion.div variants={fadeUp}>
+              <Badge variant="outline" className="mb-4">Features</Badge>
+            </motion.div>
+            <motion.h2 variants={fadeUp} className="text-3xl font-bold tracking-tight md:text-4xl">
               Everything You Need for Viral Growth
-            </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
+            </motion.h2>
+            <motion.p variants={fadeUp} className="mx-auto mt-4 max-w-2xl text-muted-foreground">
               A complete agentic system that handles content creation, posting, and analytics automatically
-            </p>
-          </div>
-          <div className="mt-16 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {features.map((feature) => (
-              <Card key={feature.title}>
-                <CardContent className="pt-6">
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-                    <feature.icon className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="text-lg font-semibold">{feature.title}</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">{feature.description}</p>
-                </CardContent>
-              </Card>
+            </motion.p>
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-60px' }}
+            variants={stagger}
+            className="mt-16 grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+          >
+            {features.map((feature, i) => (
+              <motion.div key={feature.title} variants={fadeUp} custom={i}>
+                <Card className="h-full transition-colors hover:border-primary/30 hover:bg-card/80">
+                  <CardContent className="pt-6">
+                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                      <feature.icon className="h-6 w-6 text-primary" />
+                    </div>
+                    <h3 className="text-lg font-semibold">{feature.title}</h3>
+                    <p className="mt-2 text-sm text-muted-foreground">{feature.description}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* How It Works */}
       <section id="how-it-works" className="border-t border-border bg-card py-20 md:py-32">
         <div className="container mx-auto px-4">
-          <div className="text-center">
-            <Badge variant="outline" className="mb-4">How It Works</Badge>
-            <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-60px' }}
+            variants={stagger}
+            className="text-center"
+          >
+            <motion.div variants={fadeUp}>
+              <Badge variant="outline" className="mb-4">How It Works</Badge>
+            </motion.div>
+            <motion.h2 variants={fadeUp} className="text-3xl font-bold tracking-tight md:text-4xl">
               From Setup to Viral in 3 Steps
-            </h2>
-          </div>
-          <div className="mt-16 grid gap-8 md:grid-cols-3">
+            </motion.h2>
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-60px' }}
+            variants={stagger}
+            className="mt-16 grid gap-8 md:grid-cols-3"
+          >
             {[
               {
                 step: '1',
@@ -213,55 +309,65 @@ export default function LandingPage() {
                 title: 'Watch It Grow',
                 description: 'Monitor real-time analytics as your agents work autonomously to maximize reach',
               },
-            ].map((item) => (
-              <div key={item.step} className="text-center">
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-xl font-bold text-primary-foreground">
+            ].map((item, i) => (
+              <motion.div key={item.step} variants={fadeUp} custom={i} className="text-center">
+                <motion.div
+                  whileHover={{ scale: 1.08 }}
+                  className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-xl font-bold text-primary-foreground"
+                >
                   {item.step}
-                </div>
+                </motion.div>
                 <h3 className="text-lg font-semibold">{item.title}</h3>
                 <p className="mt-2 text-sm text-muted-foreground">{item.description}</p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* CTA Section */}
       <section className="py-20 md:py-32">
         <div className="container mx-auto px-4">
-          <Card className="relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-chart-1/10" />
-            <CardContent className="relative py-16 text-center">
-              <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
-                Ready to Go Viral?
-              </h2>
-              <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-                Start your autonomous marketing campaign today and let AI agents handle the heavy lifting
-              </p>
-              <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-                <Button size="lg" asChild>
-                  <Link href="/dashboard">
-                    Launch Dashboard
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-              </div>
-              <div className="mt-8 flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <CheckCircle2 className="h-4 w-4 text-success" />
-                  No credit card required
+          <motion.div
+            initial={{ opacity: 0, y: 32 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <Card className="relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-chart-1/10" />
+              <CardContent className="relative py-16 text-center">
+                <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+                  Ready to Go Viral?
+                </h2>
+                <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
+                  Start your autonomous marketing campaign today and let AI agents handle the heavy lifting
+                </p>
+                <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+                  <Button size="lg" asChild className="group">
+                    <Link href="/dashboard">
+                      Launch Dashboard
+                      <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    </Link>
+                  </Button>
                 </div>
-                <div className="flex items-center gap-1">
-                  <CheckCircle2 className="h-4 w-4 text-success" />
-                  Demo mode included
+                <div className="mt-8 flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <CheckCircle2 className="h-4 w-4 text-success" />
+                    No credit card required
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <CheckCircle2 className="h-4 w-4 text-success" />
+                    Demo mode included
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <CheckCircle2 className="h-4 w-4 text-success" />
+                    Connect your own APIs
+                  </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <CheckCircle2 className="h-4 w-4 text-success" />
-                  Connect your own APIs
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
       </section>
 

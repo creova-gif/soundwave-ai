@@ -1,5 +1,6 @@
 'use client'
 
+import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PlatformIcon } from '@/components/icons/platform-icons'
 import type { Platform } from '@/lib/types'
@@ -30,24 +31,35 @@ export function PlatformBreakdown({ data }: PlatformBreakdownProps) {
         <CardTitle className="text-base">Platform Breakdown</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {data.map((item) => {
+        {data.map((item, i) => {
           const config = platformConfig[item.platform]
           return (
-            <div key={item.platform} className="space-y-2">
+            <motion.div
+              key={item.platform}
+              initial={{ x: -8 }}
+              animate={{ x: 0 }}
+              transition={{ delay: i * 0.06, duration: 0.35, ease: 'easeOut' }}
+              className="space-y-1.5"
+            >
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
                   <PlatformIcon platform={item.platform} size={16} />
                   <span className="font-medium">{config.label}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">{formatNumber(item.reach)}</span>
-                  <span className="text-xs text-muted-foreground">({item.percentage}%)</span>
+                  <span className="tabular-nums text-muted-foreground">{formatNumber(item.reach)}</span>
+                  <span className="w-10 text-right text-xs text-muted-foreground">({item.percentage}%)</span>
                 </div>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-secondary">
-                <div className={`h-full rounded-full ${config.color}`} style={{ width: `${item.percentage}%` }} />
+              <div className="h-1.5 overflow-hidden rounded-full bg-secondary">
+                <motion.div
+                  className={`h-full rounded-full ${config.color}`}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${item.percentage}%` }}
+                  transition={{ delay: 0.1 + i * 0.06, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                />
               </div>
-            </div>
+            </motion.div>
           )
         })}
       </CardContent>

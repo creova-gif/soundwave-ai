@@ -1,5 +1,6 @@
 'use client'
 
+import { motion, AnimatePresence } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -15,6 +16,13 @@ const agentIcons = {
   posting: Send,
   analytics: BarChart3,
   orchestrator: Bot,
+}
+
+const agentColors = {
+  content: 'text-chart-1 bg-chart-1/10',
+  posting: 'text-chart-2 bg-chart-2/10',
+  analytics: 'text-chart-3 bg-chart-3/10',
+  orchestrator: 'text-primary bg-primary/10',
 }
 
 const statusIcons = {
@@ -48,27 +56,37 @@ export function AgentLogs({ logs }: AgentLogsProps) {
       </CardHeader>
       <CardContent>
         <ScrollArea className="h-[300px] pr-4">
-          <div className="space-y-4">
-            {logs.map((log) => {
-              const AgentIcon = agentIcons[log.agentType]
-              const StatusIcon = statusIcons[log.status]
-              return (
-                <div key={log.id} className="flex gap-3">
-                  <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-secondary">
-                    <AgentIcon className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium capitalize">{log.agentType}</span>
-                      <StatusIcon className={`h-3 w-3 ${statusColors[log.status]}`} />
-                      <span className="text-xs text-muted-foreground">{formatTime(log.timestamp)}</span>
+          <div className="space-y-3">
+            <AnimatePresence initial={false}>
+              {logs.map((log) => {
+                const AgentIcon = agentIcons[log.agentType]
+                const StatusIcon = statusIcons[log.status]
+                const agentColor = agentColors[log.agentType]
+                return (
+                  <motion.div
+                    key={log.id}
+                    initial={{ x: -10, height: 0 }}
+                    animate={{ x: 0, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.25, ease: 'easeOut' }}
+                    className="flex gap-3 overflow-hidden"
+                  >
+                    <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${agentColor.split(' ')[1]}`}>
+                      <AgentIcon className={`h-4 w-4 ${agentColor.split(' ')[0]}`} />
                     </div>
-                    <p className="text-sm text-foreground">{log.action}</p>
-                    <p className="text-xs text-muted-foreground">{log.details}</p>
-                  </div>
-                </div>
-              )
-            })}
+                    <div className="flex-1 space-y-0.5 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium capitalize">{log.agentType}</span>
+                        <StatusIcon className={`h-3 w-3 flex-shrink-0 ${statusColors[log.status]}`} />
+                        <span className="text-xs text-muted-foreground ml-auto flex-shrink-0">{formatTime(log.timestamp)}</span>
+                      </div>
+                      <p className="text-sm text-foreground">{log.action}</p>
+                      <p className="text-xs text-muted-foreground truncate">{log.details}</p>
+                    </div>
+                  </motion.div>
+                )
+              })}
+            </AnimatePresence>
           </div>
         </ScrollArea>
       </CardContent>
