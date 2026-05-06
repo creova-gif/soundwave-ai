@@ -1,4 +1,4 @@
-export type Platform = 'tiktok' | 'instagram' | 'youtube' | 'twitter' | 'facebook' | 'spotify'
+export type Platform = 'tiktok' | 'instagram' | 'youtube' | 'twitter' | 'facebook' | 'spotify' | 'telegram' | 'whatsapp'
 
 export interface Song {
   id: string
