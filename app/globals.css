@@ -69,9 +69,9 @@
 }
 
 @theme inline {
-  --font-sans: 'Space Grotesk', 'Geist', 'Geist Fallback', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Geist Mono', 'Geist Mono Fallback', monospace;
-  --font-display: 'Syne', 'Space Grotesk', sans-serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Geist Mono', monospace;
+  --font-display: 'Bricolage Grotesque', 'Plus Jakarta Sans', sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

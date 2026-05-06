@@ -15,7 +15,7 @@ Required env vars: `DATABASE_URL`, `SESSION_SECRET` (already provisioned as Repl
 
 - **Framework**: Next.js 16.2.4 (App Router, webpack mode)
 - **UI**: Tailwind CSS v4, shadcn/ui (Radix UI), Framer Motion, Recharts
-- **Fonts**: Space Grotesk, Syne, JetBrains Mono
+- **Fonts**: Bricolage Grotesque (display/headings), Plus Jakarta Sans (body/UI), JetBrains Mono (code/data)
 - **AI**: Vercel AI SDK (`ai`, `@ai-sdk/react`)
 - **Auth**: iron-session v8 (encrypted cookies) + bcryptjs — sessions in `sw_session` cookie
 - **Database**: Replit PostgreSQL + Drizzle ORM (`lib/db/schema.ts`, `lib/db/index.ts`)
