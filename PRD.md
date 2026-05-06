@@ -1,172 +1,272 @@
 # Product Requirements Document
 ## SoundWave AI — Viral Engine
 
-**Version:** 1.0  
-**Status:** Launched  
+**Version:** 1.5 (Strategically Refined)  
+**Status:** v1.0 Launched · v1.5 In Planning  
 **Live URL:** https://sound-wave-ai.replit.app  
-**Stack:** Next.js 16 · React 19 · Tailwind CSS v4 · TypeScript
+**Stack:** Next.js 16 · React 19 · Tailwind CSS v4 · TypeScript · Supabase (v2)
 
 ---
 
-## 1. Product Overview
+## 1. Product Positioning
 
-SoundWave AI is an AI-powered music marketing command center that helps independent artists and labels reach mass audiences without a full marketing team. The system uses autonomous AI agents to generate viral content, schedule cross-platform posts, and track campaign analytics — all from a single dashboard.
+**SoundWave AI is not a marketing tool. It is a distribution engine.**
 
-**Core value proposition:** Launch a music track and reach 20 million people in 2 weeks with zero manual posting.
+Independent artists don't fail because of bad music. They fail because:
+- No consistent posting
+- No understanding of platform algorithms
+- No ability to scale content volume
+
+> **Input:** 1 song  
+> **Output:** 100+ pieces of optimized content across 6 platforms  
+> **Goal:** Force algorithm exposure
+
+**Category:** AI Growth Engine for Music Distribution
+
+**Not competing with:** Hootsuite, Buffer (they schedule posts)  
+**We do:** Generate → test → optimize → scale content automatically
 
 ---
 
 ## 2. Target Users
 
-| Persona | Description |
-|---|---|
-| Independent Artist | Solo musician releasing music, no marketing budget or team |
-| Small Label | Manages 2–10 artists, needs scalable automation |
-| Music Manager | Oversees campaigns across multiple platforms for a roster |
-
----
-
-## 3. Goals & Success Metrics
-
-| Goal | Metric |
-|---|---|
-| Reduce time spent on social media marketing | < 30 min/day of manual work |
-| Increase total reach per release | 10M+ streams within 2 weeks of launch |
-| Maintain platform presence | 6+ posts/day across all platforms |
-| Improve content quality | > 5% average engagement rate |
-
----
-
-## 4. Feature Inventory (Current v1.0)
-
-### 4.1 Landing Page
-- Hero section with platform pills (TikTok, Instagram, YouTube, X/Twitter, Facebook, Spotify)
-- Features grid explaining AI agent capabilities
-- How It Works section (3-step walkthrough)
-- Call-to-action linking to dashboard
-
-### 4.2 Dashboard Overview (`/dashboard`)
-- **Total Reach Counter** — live animated counter showing cumulative reach vs. 20M goal with gradient progress bar
-- **Stats Cards** — Posts Today, Scheduled, Total Views, Engagement Rate
-- **Reach Over Time chart** — 14-day area chart (Recharts)
-- **Platform Breakdown** — horizontal bar breakdown by platform with percentage share
-- **Content Queue Preview** — next 3 queued posts with platform icon badges and status
-- **Agent Activity Log** — real-time log feed with AnimatePresence entries
-- **Refresh** and **Pause Agents** controls
-
-### 4.3 Analytics (`/dashboard/analytics`)
-- Campaign goal progress tracker (current reach vs. target, days remaining, on-track status)
-- Engagement metrics: Views, Likes, Comments, Shares with trend deltas
-- Reach Over Time area chart (14-day)
-- Platform Distribution pie/donut chart
-- Hourly Engagement Pattern bar chart (best posting times)
-- Top Performing Content list
-
-### 4.4 Content Queue (`/dashboard/content`)
-- Card-based content queue with platform icon badges (real SVG icons)
-- Status badges: Approved / Pending / Posted / Failed
-- Filters by platform and status
-- Per-post actions: Edit, Approve, Delete
-- **Generate with AI** — streams AI-generated captions, hashtags, and scripts via Vercel AI SDK
-- **Add Content** manual creation flow
-
-### 4.5 Campaigns (`/dashboard/campaigns`)
-- Campaign cards with animated progress bar (reach progress)
-- Stats grid: Target, Current reach, Budget, Duration
-- Platform badges with real icons for all 6 platforms
-- Status indicators: Draft / Active / Paused / Completed
-- Start / Pause / Resume campaign controls
-- **New Campaign** dialog — name, target reach, budget, duration
-
-### 4.6 Platform Connections (`/dashboard/platforms`)
-- Connection status hub showing all 6 platforms with real SVG icons
-- Per-platform detail cards: account handle, follower count, last synced time
-- Sync and Disconnect actions per platform
-- 5 of 6 platforms connected in demo mode
-
-### 4.7 AI Agents (`/dashboard/agents`)
-- 4 autonomous agent cards: Content Agent, Posting Agent, Analytics Agent, Orchestrator
-- Running status indicators with animated pulse
-- Enable/disable toggle per agent
-- **Run Now** trigger for on-demand execution
-- **View Logs** per agent
-- **Agent Console** — send custom instructions to agents via AI streaming API
-
-### 4.8 Settings (`/dashboard/settings`)
-- **Agents tab** — auto-approve toggle, trend responder, max posts/day (6–24), min time between posts (1–4h), AI model selection (GPT-4o, GPT-4o Mini, Claude Sonnet)
-- **Notifications tab** — email, push, viral alerts, error alerts, daily digest toggles
-- **Content tab** — require manual approval, content guidelines textarea, banned words list
-- **API Keys tab** — OpenAI key, PostEverywhere key fields with demo mode warning
-
-### 4.9 Demo Mode Banner
-- Persistent banner across all dashboard pages indicating mock data
-- Directs users to Settings → API Keys to connect real platforms
-
----
-
-## 5. AI Agent Architecture
-
-| Agent | Role | API Route |
+| Persona | Description | Pain |
 |---|---|---|
-| Content Agent | Generates captions, hashtags, video scripts | `/api/agents/content` |
-| Posting Agent | Schedules and publishes content | `/api/agents/posting` |
-| Analytics Agent | Monitors performance, detects trends | `/api/agents/analytics` |
-| Orchestrator | Coordinates agents, adjusts strategy | Managed by Orchestrator logic |
-
-All agents use the **Vercel AI SDK** with streaming responses. Currently in demo/simulation mode — no real platform API keys required to run.
+| Independent Artist | Solo musician releasing music, no team | No bandwidth to post consistently |
+| Small Label | Manages 2–10 artists | Can't scale content across artists |
+| Music Manager | Oversees campaign execution | Spends hours on manual posting |
 
 ---
 
-## 6. Supported Platforms
+## 3. The Core System Loop
 
-| Platform | Icon | Content Types |
-|---|---|---|
-| TikTok | Real SVG | Short-form video captions, hooks |
-| Instagram | Real SVG | Feed posts, Reels, Stories |
-| YouTube | Real SVG | Shorts, long-form descriptions |
-| X / Twitter | Real SVG | Tweets, thread starters |
-| Facebook | Real SVG | Posts, community engagement |
-| Spotify | Real SVG | Playlist pitching, bio copy |
+**This loop IS the product. Every feature must serve it.**
 
----
+```
+Generate → Distribute → Measure → Adapt → Repeat
+```
 
-## 7. Technical Requirements
-
-| Requirement | Decision |
+| Phase | What Happens |
 |---|---|
-| Framework | Next.js 16.2.4 App Router |
-| Bundler | Webpack (Turbopack disabled — CSS url() bug) |
-| Styling | Tailwind CSS v4, custom oklch dark theme |
-| Animations | Framer Motion v12 |
-| Charts | Recharts |
-| State | Zustand (client-side store) |
-| AI | Vercel AI SDK, streaming |
-| Deployment | Replit Autoscale |
-| Build | `next build --webpack` |
-| Production server | `next start -p 5000` |
-| Security | 0 known vulnerabilities (pnpm audit clean) |
+| **Generate** | AI creates hooks, captions, scripts, hashtags — multiple variations per post |
+| **Distribute** | Cross-platform posting at time-optimized windows |
+| **Measure** | Track engagement per post, detect viral signals early |
+| **Adapt** | Double down on winning formats, kill low-performing patterns |
 
 ---
 
-## 8. Out of Scope (v1.0)
+## 4. Realistic Performance Expectations
 
-- Real platform OAuth connections (TikTok API, Instagram Graph API, etc.)
-- Persistent database (Supabase / PostgreSQL)
-- User authentication / multi-account support
-- Billing / subscription management
-- Audio/video upload and processing
-- Real AI content moderation
-- Mobile native app
+| Tier | Expected Impressions |
+|---|---|
+| Baseline | 500K – 2M per campaign |
+| High-performing | 5M – 20M+ |
+| Viral outlier | 50M+ |
+
+> Investors and users trust ranges, not promises.
 
 ---
 
-## 9. Roadmap (v2.0 Ideas)
+## 5. Feature Inventory
 
-1. **Real platform integrations** — OAuth connect TikTok, Instagram, YouTube
-2. **User auth** — Supabase Auth for multi-user support
-3. **Database persistence** — store campaigns, content, and analytics in PostgreSQL
-4. **Stripe billing** — subscription tiers (Free / Pro / Label)
-5. **Audio upload** — analyze track mood/tempo to inform content style
-6. **Trend detection** — real-time TikTok trending audio/hashtag detection
-7. **A/B content testing** — run two caption variants, promote the winner
-8. **Mobile app** — Expo-based companion app for approvals on the go
+### 5.1 Current (v1.0 — Launched)
+
+| Feature | Status |
+|---|---|
+| Landing page with platform pills | Live |
+| Dashboard overview (reach counter, charts, agent logs) | Live |
+| Analytics (engagement metrics, reach over time, platform breakdown) | Live |
+| Content queue with AI generation | Live |
+| Campaign management (create, pause, track) | Live |
+| Platform connections UI (6 platforms) | Live |
+| AI Agents control panel (4 agents) | Live |
+| Settings (agent config, notifications, content rules, API keys) | Live |
+| Demo mode banner | Live |
+| Production deployment on Replit Autoscale | Live |
+
+---
+
+### 5.2 Planned (v1.5 — Next 30 Days)
+
+#### 5.2.1 Multi-Variant Content Generation Engine
+**Current:** Single output per AI generation  
+**New:** 5–10 variations per post
+
+Each variation tagged with:
+- **Tone:** Emotional / Hype / Storytelling / Controversial
+- **Format:** Question / Statement / Hook / CTA
+
+Enables A/B testing later. Feeds the Adapt phase of the core loop.
+
+---
+
+#### 5.2.2 Intelligent Posting Engine (Adaptive)
+**Current:** Static scheduling  
+**New:** Dynamic, platform-aware posting rules
+
+| Platform | Daily Frequency | Timing Logic |
+|---|---|---|
+| TikTok | 3–6/day | Engagement heatmap |
+| Instagram | 2–4/day | Historical performance |
+| YouTube Shorts | 1–3/day | Peak audience time |
+| X / Twitter | 4–8/day | Trend windows |
+| Facebook | 1–2/day | Community activity |
+| Spotify | Pitch only | Release windows |
+
+---
+
+#### 5.2.3 Viral Signal Detection (Critical New Feature)
+
+Detect early signals before a post pops:
+- High watch time relative to average
+- Save rate spike
+- Comment velocity acceleration
+- Share-to-view ratio threshold
+
+**If triggered automatically:**
+1. Repost variation within 6–12 hours
+2. Push similar content formats across platforms
+3. Increase posting frequency for that format
+
+> This is how virality gets manufactured, not waited for.
+
+---
+
+#### 5.2.4 Content Amplification Engine
+
+When a post performs above threshold:
+
+System auto-generates:
+- Thread version → X / Twitter
+- Story format → Instagram
+- Extended writeup → YouTube description
+- Slight variation → reposts
+
+> 1 viral post becomes 10 derivative posts automatically.
+
+---
+
+#### 5.2.5 Campaign Intelligence Layer
+
+Upgrade Campaigns page from tracker to decision engine:
+
+**Status indicators:** On Track / At Risk / Viral  
+
+**Suggested actions (auto-generated):**
+- "Increase TikTok output — engagement rate 2x average"
+- "Switch hook style on Instagram — saves rate dropping"
+- "Pause Facebook — zero traction in 48 hours"
+
+> Users shouldn't have to think. The system tells them what to do.
+
+---
+
+### 5.3 AI Agent Evolution (v2.0)
+
+| Agent | Learns | Outputs |
+|---|---|---|
+| **Content Agent** | Which hooks perform best, artist's tone/style | Personalized content, not generic AI |
+| **Posting Agent** | Best times per platform, fatigue thresholds | Adaptive schedule, avoids spam penalties |
+| **Analytics Agent** | Historical performance patterns | Predictions: "This post will outperform by ~40%" |
+| **Orchestrator** | Full campaign context | Autonomous decisions: increase/decrease/pivot strategy |
+
+---
+
+## 6. Data Layer (Required for v2)
+
+**Current:** In-memory mock store — no persistence  
+**Required:** PostgreSQL via Supabase
+
+### Database Schema
+
+| Table | Key Fields |
+|---|---|
+| `users` | id, email, plan, created_at |
+| `campaigns` | id, user_id, name, status, target_reach, platforms |
+| `content` | id, campaign_id, platform, body, hashtags, tone, format, status |
+| `posts` | id, content_id, platform_post_id, posted_at, engagement |
+| `metrics` | post_id, views, likes, comments, shares, saves, watch_time |
+| `agent_decisions` | id, campaign_id, agent, decision, rationale, timestamp |
+
+Without persistence:
+- Can't learn from past campaigns
+- Can't improve AI outputs over time
+- Can't build defensibility against competitors
+
+---
+
+## 7. Monetization
+
+### Pricing Tiers
+
+| Tier | Price | Limits |
+|---|---|---|
+| **Free** | $0 | 1 campaign, 10 posts/day, limited AI |
+| **Pro** | $29–$79/month | Unlimited campaigns, full automation, analytics |
+| **Label** | $199–$499/month | Multi-artist dashboard, priority AI, advanced analytics |
+
+### Future Revenue
+- Pay-per-viral-boost (one-time fee to activate amplification engine)
+- CREOVA agency bundle (SoundWave AI as backend engine for client campaigns)
+
+---
+
+## 8. Growth Strategy
+
+### Phase 1: Artists (0 → 100 users)
+- DM outreach to independent artists
+- Offer free campaigns to 10 artists
+- Capture results as case studies
+
+### Phase 2: TikTok Growth Loop
+- Post proof: "We got this artist 1M views in 7 days"
+- Funnel viewers → landing page
+- Let the product market itself
+
+### Phase 3: CREOVA Integration
+- Bundle SoundWave AI into CREOVA agency services
+- Use as the tech backbone for client campaigns
+- Turns agency into a tech-enabled powerhouse
+
+---
+
+## 9. Technical Roadmap
+
+| Phase | Timeline | Deliverables |
+|---|---|---|
+| **Phase 1** | 0–30 days | Supabase integration, auth system, real campaign storage |
+| **Phase 2** | 30–60 days | TikTok + Instagram API OAuth, real posting (not simulation) |
+| **Phase 3** | 60–90 days | Trend detection engine, A/B testing, viral signal automation |
+| **Phase 4** | 90–120 days | Audio analysis (BPM, mood, genre), auto-style content generation |
+| **Phase 5** | 120+ days | Mobile app (Expo), push notifications for approvals |
+
+---
+
+## 10. Risks & Mitigations
+
+| Risk | Mitigation |
+|---|---|
+| Platform API restrictions (TikTok especially) | Human-in-the-loop approval flow, platform-specific compliance |
+| Spam detection / shadowbanning | Content variation engine, posting frequency limits, fatigue thresholds |
+| AI-generated content fatigue | Multi-variant system, tone/format diversity |
+| Overpromising results | Range-based expectations, not guarantees |
+
+---
+
+## 11. Competitive Positioning
+
+| Tool | What They Do | SoundWave AI |
+|---|---|---|
+| Hootsuite | Schedule posts | Generate + test + optimize + scale |
+| Buffer | Queue content manually | Autonomous 24/7 content engine |
+| DistroKid | Distribute audio | Distribute content at volume |
+| Feature.fm | Playlist pitching | Algorithm forcing across all platforms |
+
+**Moat:** The more campaigns run, the more the agents learn. Data compounding creates defensibility over time.
+
+---
+
+## 12. Final Positioning Statement
+
+> SoundWave AI is not a tool artists use.  
+> It is a system that replaces their marketing team.
