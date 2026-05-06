@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "ClTl8ndO4bqm8LsuM79hM"
+uri = "file://PRD.md"
+type = "text"
+title = "SoundWave AI — Product Requirements Document"
