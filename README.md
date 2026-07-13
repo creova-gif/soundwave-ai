@@ -9,6 +9,10 @@
 
 ---
 
+![SoundWave AI dashboard](docs/screenshots/dashboard.png)
+
+---
+
 ## What this is
 
 Independent artists don't fail because of bad music — they fail because of no consistent posting, no understanding of platform algorithms, and no ability to scale content volume. SoundWave AI addresses that directly: one song in, dozens of optimized short-form clips and posts out, tailored per platform, at a volume no individual artist could produce manually.
