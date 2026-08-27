@@ -149,7 +149,9 @@ export default function LandingPage() {
         </div>
 
         {/* Floating preview cards */}
-        <div className="anim-fade-up anim-d6 relative z-10 mt-14 flex w-full max-w-3xl items-end justify-center gap-4">
+        <div className="anim-fade-up anim-d6 relative z-10 mt-14 flex w-full max-w-3xl flex-col items-center gap-3">
+          <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Illustrative example — not live campaign data</span>
+        <div className="flex w-full items-end justify-center gap-4">
 
           {/* Left — Campaign Live */}
           <div className="anim-float hidden w-48 flex-col rounded-3xl border border-border/50 bg-card/80 p-5 shadow-2xl backdrop-blur-xl sm:flex">
@@ -157,12 +159,12 @@ export default function LandingPage() {
               <Radio className="h-5 w-5 text-primary" />
             </div>
             <div style={{ fontFamily: D, fontWeight: 700, fontSize: '0.95rem', letterSpacing: '-0.02em' }}>
-              Campaign Live
+              Sample Campaign
             </div>
             <div className="mt-1 text-xs text-muted-foreground">6 platforms · 24/7</div>
             <div className="mt-3 flex items-center gap-1.5">
-              <div className="h-2 w-2 rounded-full bg-green-500" style={{ animation: 'orb-pulse 1.8s ease-in-out infinite' }} />
-              <span className="text-xs text-muted-foreground">4 agents active</span>
+              <div className="h-2 w-2 rounded-full bg-green-500" />
+              <span className="text-xs text-muted-foreground">Example: 4 agents active</span>
             </div>
           </div>
 
@@ -213,6 +215,7 @@ export default function LandingPage() {
               ))}
             </div>
           </div>
+        </div>
         </div>
       </section>
 
