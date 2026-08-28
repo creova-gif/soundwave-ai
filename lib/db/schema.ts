@@ -9,6 +9,11 @@ export const users = pgTable('users', {
   email: varchar('email', { length: 255 }).notNull().unique(),
   name: varchar('name', { length: 255 }),
   hashedPassword: varchar('hashed_password', { length: 255 }).notNull(),
+  // Login brute-force protection. No lockout existed at all previously --
+  // bcrypt's cost factor slows a single guess down, but nothing stopped a
+  // sustained attack against one known email over time.
+  failedLoginAttempts: integer('failed_login_attempts').notNull().default(0),
+  lockedUntil: timestamp('locked_until'),
   telegramBotToken: text('telegram_bot_token'),
   telegramChatId: text('telegram_chat_id'),
   whatsappNumber: varchar('whatsapp_number', { length: 30 }),
