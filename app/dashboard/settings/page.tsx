@@ -34,6 +34,7 @@ export default function SettingsPage() {
   })
 
   const [telegram, setTelegram] = useState({ botToken: '', chatId: '' })
+  const [savedBotTokenMask, setSavedBotTokenMask] = useState<string | null>(null)
   const [whatsapp, setWhatsapp] = useState({ phone: '' })
   const [telegramStatus, setTelegramStatus] = useState<'idle' | 'testing' | 'connected' | 'error'>('idle')
   const [telegramError, setTelegramError] = useState('')
@@ -44,7 +45,7 @@ export default function SettingsPage() {
   useEffect(() => {
     fetch('/api/auth/user').then(r => r.json()).then(({ user }) => {
       if (!user) return
-      if (user.telegramBotToken) setTelegram(t => ({ ...t, botToken: user.telegramBotToken }))
+      if (user.telegramBotToken) setSavedBotTokenMask(user.telegramBotToken)
       if (user.telegramChatId) setTelegram(t => ({ ...t, chatId: user.telegramChatId }))
       if (user.whatsappNumber) setWhatsapp({ phone: user.whatsappNumber })
       if (user.telegramBotToken && user.telegramChatId) setTelegramStatus('connected')
@@ -73,6 +74,8 @@ export default function SettingsPage() {
       })
       const data = await res.json()
       if (res.ok) {
+        setSavedBotTokenMask(`••••${telegram.botToken.slice(-4)}`)
+        setTelegram(t => ({ ...t, botToken: '' }))
         setTelegramStatus('connected')
       } else {
         setTelegramError(data.error ?? 'Connection failed')
@@ -228,7 +231,7 @@ export default function SettingsPage() {
                   <div className="relative">
                     <Input
                       type="password"
-                      placeholder="1234567890:ABCDEFabcdef..."
+                      placeholder={savedBotTokenMask ? `Saved (${savedBotTokenMask}) — paste a new token to replace` : '1234567890:ABCDEFabcdef...'}
                       value={telegram.botToken}
                       onChange={(e) => { setTelegram({ ...telegram, botToken: e.target.value }); setTelegramStatus('idle') }}
                       className="pr-9 font-mono text-xs"

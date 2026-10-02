@@ -1,11 +1,15 @@
-import { ToolLoopAgent, tool } from 'ai'
+import { stepCountIs, ToolLoopAgent, tool } from 'ai'
 import { z } from 'zod'
+import { AGENT_MAX_OUTPUT_TOKENS, AGENT_MAX_STEPS, AGENT_MODEL_ID } from '@/lib/ai/limits'
 import type { Platform, ContentItem, Post } from '@/lib/types'
 
 // Posting Agent - Handles scheduling and cross-platform posting
 export function createPostingAgent() {
   return new ToolLoopAgent({
-    model: 'openai/gpt-4o',
+    model: AGENT_MODEL_ID,
+    stopWhen: stepCountIs(AGENT_MAX_STEPS),
+    maxOutputTokens: AGENT_MAX_OUTPUT_TOKENS,
+    maxRetries: 0,
     instructions: `You are a social media posting specialist responsible for scheduling and publishing content across multiple platforms.
 
 Your responsibilities:
