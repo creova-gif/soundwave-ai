@@ -6,6 +6,7 @@ import {
   AGENT_MAX_MOOD_CHARS,
   AGENT_MAX_PARTS,
   AGENT_MAX_SHORT_FIELD,
+  AGENT_MAX_TOTAL_CHARS,
 } from '@/lib/ai/limits'
 
 const platforms = ['tiktok', 'instagram', 'youtube', 'twitter', 'facebook', 'spotify'] as const
@@ -38,7 +39,21 @@ const userMessageSchema = z.object({
   }
 })
 
-const messagesSchema = z.array(userMessageSchema).max(AGENT_MAX_MESSAGES)
+const messagesSchema = z.array(userMessageSchema).max(AGENT_MAX_MESSAGES).superRefine((messages, ctx) => {
+  let total = 0
+  for (const message of messages) {
+    if (typeof message.content === 'string') total += message.content.length
+    for (const part of message.parts ?? []) {
+      total += part.text.length
+    }
+  }
+  if (total > AGENT_MAX_TOTAL_CHARS) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: `Total message text exceeds ${AGENT_MAX_TOTAL_CHARS} characters`,
+    })
+  }
+})
 
 export type UserUiMessage = {
   id: string

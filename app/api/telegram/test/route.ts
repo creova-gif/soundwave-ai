@@ -20,10 +20,11 @@ export async function POST(request: NextRequest) {
     if (typeof botToken !== 'string' || typeof chatId !== 'string' || chatId.length > 64) {
       return NextResponse.json({ error: 'Bot token and chat ID are required' }, { status: 400 })
     }
+    const normalizedToken = botToken.trim()
 
     let sealedToken: string
     try {
-      sealedToken = sealBotToken(botToken)
+      sealedToken = sealBotToken(normalizedToken)
     } catch (err) {
       if (err instanceof BotTokenError && err.code === 'invalid') {
         return NextResponse.json({ error: 'Invalid bot token' }, { status: 400 })
@@ -34,7 +35,7 @@ export async function POST(request: NextRequest) {
 
     const message = `✅ *SoundWave AI Connected!*\n\nYour Telegram notifications are now active. You'll receive alerts when:\n• 🚀 A campaign goes live\n• 🔥 Content goes viral\n• 📊 Daily performance digest\n• ⚠️ Any issues that need attention`
 
-    const telegramRes = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+    const telegramRes = await fetch(`https://api.telegram.org/bot${normalizedToken}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

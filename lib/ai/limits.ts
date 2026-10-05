@@ -11,6 +11,8 @@ export const AGENT_TIMEOUT_MS = 25_000
 export const AGENT_MAX_MESSAGES = 20
 export const AGENT_MAX_MESSAGE_CHARS = 4_000
 export const AGENT_MAX_PARTS = 8
+/** Cap total text across all messages/parts (~daily budget / 4). */
+export const AGENT_MAX_TOTAL_CHARS = 40_000
 export const AGENT_MAX_SHORT_FIELD = 120
 export const AGENT_MAX_MOOD_CHARS = 40
 export const AGENT_MAX_CONTENT_CHARS = 4_000

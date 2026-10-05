@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getIronSession } from 'iron-session'
 import { db } from '@/lib/db'
 import { users } from '@/lib/db/schema'
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import type { SessionData } from '@/lib/session'
 import { sessionOptions } from '@/lib/session'
 import {
@@ -57,11 +57,19 @@ export async function GET(request: NextRequest) {
 
   if (user.telegramBotToken && !isSealedBotToken(user.telegramBotToken)) {
     try {
-      const sealed = encryptBotToken(user.telegramBotToken)
-      await db.update(users)
+      const plaintext = user.telegramBotToken
+      const sealed = encryptBotToken(plaintext)
+      const updated = await db.update(users)
         .set({ telegramBotToken: sealed, updatedAt: new Date() })
-        .where(eq(users.id, user.id))
-      user.telegramBotToken = sealed
+        .where(and(eq(users.id, user.id), eq(users.telegramBotToken, plaintext)))
+        .returning({ telegramBotToken: users.telegramBotToken })
+      if (updated[0]) {
+        user.telegramBotToken = updated[0].telegramBotToken
+      } else {
+        const [fresh] = await db.select({ telegramBotToken: users.telegramBotToken })
+          .from(users).where(eq(users.id, user.id)).limit(1)
+        if (fresh) user.telegramBotToken = fresh.telegramBotToken
+      }
     } catch {
       console.error('[user] bot token reseal skipped')
     }
@@ -80,6 +88,9 @@ export async function PATCH(request: NextRequest) {
 
   try {
     const body = await request.json()
+    if (body == null || typeof body !== 'object' || Array.isArray(body)) {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+    }
     const updates: {
       name?: string
       telegramBotToken?: string | null
