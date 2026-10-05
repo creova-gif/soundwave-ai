@@ -5,6 +5,7 @@ import { users } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import type { SessionData } from '@/lib/session'
 import { sessionOptions } from '@/lib/session'
+import { BotTokenError, sealBotToken } from '@/lib/crypto/bot-token'
 
 export async function POST(request: NextRequest) {
   const res = NextResponse.next()
@@ -16,10 +17,25 @@ export async function POST(request: NextRequest) {
     if (!botToken || !chatId) {
       return NextResponse.json({ error: 'Bot token and chat ID are required' }, { status: 400 })
     }
+    if (typeof botToken !== 'string' || typeof chatId !== 'string' || chatId.length > 64) {
+      return NextResponse.json({ error: 'Bot token and chat ID are required' }, { status: 400 })
+    }
+    const normalizedToken = botToken.trim()
+
+    let sealedToken: string
+    try {
+      sealedToken = sealBotToken(normalizedToken)
+    } catch (err) {
+      if (err instanceof BotTokenError && err.code === 'invalid') {
+        return NextResponse.json({ error: 'Invalid bot token' }, { status: 400 })
+      }
+      console.error('[telegram test] bot token storage is not configured')
+      return NextResponse.json({ error: 'Token storage is not configured' }, { status: 503 })
+    }
 
     const message = `✅ *SoundWave AI Connected!*\n\nYour Telegram notifications are now active. You'll receive alerts when:\n• 🚀 A campaign goes live\n• 🔥 Content goes viral\n• 📊 Daily performance digest\n• ⚠️ Any issues that need attention`
 
-    const telegramRes = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+    const telegramRes = await fetch(`https://api.telegram.org/bot${normalizedToken}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -35,12 +51,12 @@ export async function POST(request: NextRequest) {
     }
 
     await db.update(users)
-      .set({ telegramBotToken: botToken, telegramChatId: chatId, updatedAt: new Date() })
+      .set({ telegramBotToken: sealedToken, telegramChatId: chatId, updatedAt: new Date() })
       .where(eq(users.id, session.userId))
 
     return NextResponse.json({ success: true, message: 'Test message sent! Check your Telegram.' })
-  } catch (err) {
-    console.error('[telegram test]', err)
+  } catch {
+    console.error('[telegram test] request failed')
     return NextResponse.json({ error: 'Failed to send test message' }, { status: 500 })
   }
 }

@@ -1,11 +1,15 @@
-import { ToolLoopAgent, tool } from 'ai'
+import { stepCountIs, ToolLoopAgent, tool } from 'ai'
 import { z } from 'zod'
+import { AGENT_MAX_OUTPUT_TOKENS, AGENT_MAX_STEPS, AGENT_MODEL_ID } from '@/lib/ai/limits'
 import type { Platform, EngagementMetrics } from '@/lib/types'
 
 // Analytics Agent - Monitors and reports on campaign performance
 export function createAnalyticsAgent() {
   return new ToolLoopAgent({
-    model: 'openai/gpt-4o',
+    model: AGENT_MODEL_ID,
+    stopWhen: stepCountIs(AGENT_MAX_STEPS),
+    maxOutputTokens: AGENT_MAX_OUTPUT_TOKENS,
+    maxRetries: 0,
     instructions: `You are a music marketing analytics expert responsible for tracking performance and providing insights.
 
 Your responsibilities:

@@ -12,6 +12,7 @@ import { Bot, Sparkles, Send, BarChart3, RefreshCw, Zap } from 'lucide-react'
 import { store } from '@/lib/store'
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
+import { AGENT_MAX_MESSAGE_CHARS, AGENT_MAX_MESSAGES, AGENT_MAX_PARTS } from '@/lib/ai/limits'
 
 const agents = [
   {
@@ -60,6 +61,23 @@ const agents = [
   },
 ]
 
+function userOnlyRequestBody(messages: Array<{ id: string; role: string; parts: Array<{ type: string; text?: string }> }>) {
+  const userMessages = messages
+    .filter((message) => message.role === 'user')
+    .slice(-AGENT_MAX_MESSAGES)
+    .map((message) => ({
+      id: message.id,
+      role: 'user' as const,
+      parts: message.parts
+        .filter((part): part is { type: string; text: string } => part.type === 'text' && typeof part.text === 'string' && part.text.length > 0)
+        .slice(0, AGENT_MAX_PARTS)
+        .map((part) => ({ type: 'text' as const, text: part.text.slice(0, AGENT_MAX_MESSAGE_CHARS) })),
+    }))
+    .filter((message) => message.parts.length > 0)
+
+  return { messages: userMessages }
+}
+
 const cardVariants = {
   hidden: { y: 16 },
   visible: (i: number) => ({
@@ -76,6 +94,7 @@ export default function AgentsPage() {
   const { messages, sendMessage, status } = useChat({
     transport: new DefaultChatTransport({
       api: selectedAgent ? agents.find((a) => a.id === selectedAgent)?.endpoint || '/api/agents/content' : '/api/agents/content',
+      prepareSendMessagesRequest: ({ messages }) => ({ body: userOnlyRequestBody(messages) }),
     }),
   })
 

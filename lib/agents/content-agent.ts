@@ -1,11 +1,15 @@
-import { ToolLoopAgent, tool } from 'ai'
+import { stepCountIs, ToolLoopAgent, tool } from 'ai'
 import { z } from 'zod'
+import { AGENT_MAX_OUTPUT_TOKENS, AGENT_MAX_STEPS, AGENT_MODEL_ID } from '@/lib/ai/limits'
 import type { Platform, ContentItem } from '@/lib/types'
 
 // Content Agent - Generates viral content for music marketing
 export function createContentAgent() {
   return new ToolLoopAgent({
-    model: 'openai/gpt-4o',
+    model: AGENT_MODEL_ID,
+    stopWhen: stepCountIs(AGENT_MAX_STEPS),
+    maxOutputTokens: AGENT_MAX_OUTPUT_TOKENS,
+    maxRetries: 0,
     instructions: `You are a viral music marketing expert specializing in social media content creation.
 Your goal is to create engaging, platform-specific content that hooks viewers in the first second.
 

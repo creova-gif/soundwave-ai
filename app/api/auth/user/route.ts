@@ -2,9 +2,36 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getIronSession } from 'iron-session'
 import { db } from '@/lib/db'
 import { users } from '@/lib/db/schema'
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import type { SessionData } from '@/lib/session'
 import { sessionOptions } from '@/lib/session'
+import {
+  BotTokenError,
+  encryptBotToken,
+  isSealedBotToken,
+  maskBotToken,
+  sealBotToken,
+} from '@/lib/crypto/bot-token'
+
+function toPublicUser(user: {
+  id: number
+  email: string
+  name: string | null
+  telegramBotToken: string | null
+  telegramChatId: string | null
+  whatsappNumber: string | null
+  createdAt: Date
+}) {
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    telegramBotToken: maskBotToken(user.telegramBotToken),
+    telegramChatId: user.telegramChatId,
+    whatsappNumber: user.whatsappNumber,
+    createdAt: user.createdAt,
+  }
+}
 
 export async function GET(request: NextRequest) {
   const res = NextResponse.next()
@@ -28,7 +55,27 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ user: null }, { status: 401 })
   }
 
-  return NextResponse.json({ user })
+  if (user.telegramBotToken && !isSealedBotToken(user.telegramBotToken)) {
+    try {
+      const plaintext = user.telegramBotToken
+      const sealed = encryptBotToken(plaintext)
+      const updated = await db.update(users)
+        .set({ telegramBotToken: sealed, updatedAt: new Date() })
+        .where(and(eq(users.id, user.id), eq(users.telegramBotToken, plaintext)))
+        .returning({ telegramBotToken: users.telegramBotToken })
+      if (updated[0]) {
+        user.telegramBotToken = updated[0].telegramBotToken
+      } else {
+        const [fresh] = await db.select({ telegramBotToken: users.telegramBotToken })
+          .from(users).where(eq(users.id, user.id)).limit(1)
+        if (fresh) user.telegramBotToken = fresh.telegramBotToken
+      }
+    } catch {
+      console.error('[user] bot token reseal skipped')
+    }
+  }
+
+  return NextResponse.json({ user: toPublicUser(user) })
 }
 
 export async function PATCH(request: NextRequest) {
@@ -41,20 +88,73 @@ export async function PATCH(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const allowed = ['name', 'telegramBotToken', 'telegramChatId', 'whatsappNumber']
-    const updates: Record<string, string> = {}
-    for (const key of allowed) {
-      if (key in body) updates[key] = body[key]
+    if (body == null || typeof body !== 'object' || Array.isArray(body)) {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+    }
+    const updates: {
+      name?: string
+      telegramBotToken?: string | null
+      telegramChatId?: string
+      whatsappNumber?: string
+      updatedAt: Date
+    } = { updatedAt: new Date() }
+
+    if ('name' in body) {
+      if (typeof body.name !== 'string' || body.name.length > 255) {
+        return NextResponse.json({ error: 'Invalid name' }, { status: 400 })
+      }
+      updates.name = body.name
+    }
+    if ('telegramChatId' in body) {
+      if (typeof body.telegramChatId !== 'string' || body.telegramChatId.length > 64) {
+        return NextResponse.json({ error: 'Invalid chat id' }, { status: 400 })
+      }
+      updates.telegramChatId = body.telegramChatId
+    }
+    if ('whatsappNumber' in body) {
+      if (typeof body.whatsappNumber !== 'string' || body.whatsappNumber.length > 30) {
+        return NextResponse.json({ error: 'Invalid WhatsApp number' }, { status: 400 })
+      }
+      updates.whatsappNumber = body.whatsappNumber
+    }
+    if ('telegramBotToken' in body) {
+      if (body.telegramBotToken == null || body.telegramBotToken === '') {
+        updates.telegramBotToken = null
+      } else if (typeof body.telegramBotToken !== 'string') {
+        return NextResponse.json({ error: 'Invalid bot token' }, { status: 400 })
+      } else {
+        try {
+          updates.telegramBotToken = sealBotToken(body.telegramBotToken)
+        } catch (err) {
+          if (err instanceof BotTokenError && err.code === 'invalid') {
+            return NextResponse.json({ error: 'Invalid bot token' }, { status: 400 })
+          }
+          console.error('[user] bot token storage is not configured')
+          return NextResponse.json({ error: 'Token storage is not configured' }, { status: 503 })
+        }
+      }
     }
 
     const [updated] = await db.update(users)
-      .set({ ...updates, updatedAt: new Date() })
+      .set(updates)
       .where(eq(users.id, session.userId))
-      .returning()
+      .returning({
+        id: users.id,
+        email: users.email,
+        name: users.name,
+        telegramBotToken: users.telegramBotToken,
+        telegramChatId: users.telegramChatId,
+        whatsappNumber: users.whatsappNumber,
+        createdAt: users.createdAt,
+      })
 
-    return NextResponse.json({ user: updated })
-  } catch (err) {
-    console.error('[user patch]', err)
+    if (!updated) {
+      return NextResponse.json({ error: 'Update failed' }, { status: 500 })
+    }
+
+    return NextResponse.json({ user: toPublicUser(updated) })
+  } catch {
+    console.error('[user patch] update failed')
     return NextResponse.json({ error: 'Update failed' }, { status: 500 })
   }
 }

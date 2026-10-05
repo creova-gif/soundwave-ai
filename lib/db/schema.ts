@@ -1,6 +1,6 @@
 import {
   pgTable, serial, text, varchar, integer,
-  timestamp, numeric, boolean,
+  timestamp, numeric, boolean, uniqueIndex,
 } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
 
@@ -59,6 +59,17 @@ export const contentItems = pgTable('content_items', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
 
+/** Per-user request and token counters shared across app instances. */
+export const agentQuotas = pgTable('agent_quotas', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  bucket: varchar('bucket', { length: 64 }).notNull(),
+  requests: integer('requests').notNull().default(0),
+  tokens: integer('tokens').notNull().default(0),
+}, (table) => [
+  uniqueIndex('agent_quotas_user_bucket_idx').on(table.userId, table.bucket),
+])
+
 export const agentLogs = pgTable('agent_logs', {
   id: serial('id').primaryKey(),
   campaignId: integer('campaign_id'),
@@ -74,6 +85,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   campaigns: many(campaigns),
   contentItems: many(contentItems),
   agentLogs: many(agentLogs),
+  agentQuotas: many(agentQuotas),
 }))
 
 export const campaignsRelations = relations(campaigns, ({ one, many }) => ({

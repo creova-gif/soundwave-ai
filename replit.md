@@ -9,7 +9,7 @@ AI-powered music marketing command center that autonomously generates content, p
 - `npm run start` — production server on port 5000
 - `npm run db:push` — push Drizzle schema changes to the database
 
-Required env vars: `DATABASE_URL`, `SESSION_SECRET` (already provisioned as Replit secrets)
+Required env vars: `DATABASE_URL`, `SESSION_SECRET`. Saving a Telegram bot token also needs `TOKEN_ENCRYPTION_KEY` (AES-256-GCM at rest). Optional agent caps: `AGENT_REQUESTS_PER_MINUTE` (default 8), `AGENT_DAILY_TOKEN_BUDGET` (default 40000). Model calls go through the Vercel AI Gateway (`AI_GATEWAY_API_KEY` in the host environment, not read in app source).
 
 ## Stack
 
@@ -36,7 +36,7 @@ Required env vars: `DATABASE_URL`, `SESSION_SECRET` (already provisioned as Repl
 - `components/dashboard/music-player.tsx` — Floating mini-player with animated waveform
 - `components/dashboard/` — Sidebar, charts, stats cards, etc.
 - `components/ui/` — shadcn/ui primitives
-- `lib/db/schema.ts` — Drizzle schema: users, campaigns, content_items, agent_logs
+- `lib/db/schema.ts` — Drizzle schema: users, campaigns, content_items, agent_logs, agent_quotas
 - `lib/db/index.ts` — Drizzle + pg Pool client
 - `lib/session.ts` — iron-session config (SessionData type, cookie options)
 - `lib/types.ts` — Platform type includes telegram + whatsapp
