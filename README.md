@@ -5,87 +5,54 @@
 [![Status](https://img.shields.io/badge/status-v1.0_launched-brightgreen)]()
 [![License](https://img.shields.io/badge/license-proprietary-red)]()
 
-*(Positioning statement above is from the product's own PRD — kept verbatim because it's a clear, specific claim, not marketing filler.)*
-
----
-
 ![SoundWave AI dashboard](docs/screenshots/dashboard.png)
 
----
+**Live:** [sound-wave-ai.replit.app](https://sound-wave-ai.replit.app) — a real, launched v1.0 product, not a prototype.
 
-## What this is
+## Overview
+Independent artists don't fail because of bad music — they fail from inconsistent posting and inability to produce content volume. SoundWave AI turns one song into dozens of optimized short-form clips and posts, tailored per platform.
 
-Independent artists don't fail because of bad music — they fail because of no consistent posting, no understanding of platform algorithms, and no ability to scale content volume. SoundWave AI addresses that directly: one song in, dozens of optimized short-form clips and posts out, tailored per platform, at a volume no individual artist could produce manually.
+## Problem
+Independent artists can't manually produce the volume or platform-specific variety of content that algorithm-driven distribution requires.
 
-**Explicitly not competing with** Hootsuite or Buffer — those schedule posts you already made. SoundWave AI generates the content itself.
+## Solution
+AI content generation, posting, and analytics agents that turn a single song into platform-specific content at scale — explicitly not a scheduling tool (not competing with Hootsuite/Buffer), but a content generation engine.
 
-**Live:** [sound-wave-ai.replit.app](https://sound-wave-ai.replit.app) — this is a real, launched v1.0 product, not a prototype.
+## Key Capabilities
+- AI content generation agent: platform-specific content variations from one song
+- AI posting agent: cross-platform distribution
+- AI analytics agent: performance tracking feeding back into content strategy
+- Full auth system
 
----
-
-## Core Features
-
-- **AI content generation agent** — turns a single song into platform-specific content variations
-- **AI posting agent** — handles distribution across platforms
-- **AI analytics agent** — tracks performance to feed back into content strategy
-- **Auth system** — full login/register/logout flow
-
----
-
-## Tech Stack
+## Technology Stack
 
 | Layer | Technology |
 |---|---|
-| Frontend / Backend | Next.js 16, React 19 |
+| Framework | Next.js 16, React 19 |
 | Styling | Tailwind CSS v4 |
 | Language | TypeScript |
 | Database / Auth | Supabase v2 |
 | AI SDK | `@ai-sdk/react` |
-| ORM | Drizzle (`db:push` script) |
+| ORM | Drizzle |
 
----
-
-## Getting Started (Local Dev)
-
-### Prerequisites
-- Node.js 18+
-- Supabase project (auth + database)
-
-### Installation
-
+## Testing / Linting
 ```bash
-git clone https://github.com/creova-gif/soundwave-ai.git
-cd soundwave-ai
-npm install
+npm run lint
+npm run build
 ```
+This repo has ESLint configured, unlike most of the portfolio's build-only tier.
 
-### Running locally
-
-```bash
-npm run dev
-```
-Runs on port 5000 by default.
-
-### Database
-
-```bash
-npm run db:push
-```
-
----
-
-## Roadmap / Status
-
-Per the product's own PRD: **v1.0 launched**, v1.5 in planning (marked "strategically refined" in the roadmap doc — worth reviewing `PRD.md` directly for what's actually changing in v1.5).
+## Project Status
+Launched — this is a real, live v1.0 product with real users, not a prototype.
 
 ## Contributing
-
-This is a private, proprietary CREOVA product. External contributions are not accepted at this time.
+Private, proprietary CREOVA product.
 
 ## License
+Proprietary — All Rights Reserved.
 
-Proprietary — All Rights Reserved. See `LICENSE`.
+## Author / Organization
+Built by [Justin Mafie](https://github.com/creova-gif) under CREOVA.
 
-## Credits
-
-Built by CREOVA. Product lead: Justin Mafie.
+## Documentation
+See `CLAUDE.md` for AI-agent-specific notes.
