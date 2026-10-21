@@ -7,7 +7,10 @@ import type {
   AnalyticsData,
   Platform,
   Song,
+  AudioClip,
 } from './types'
+import { generateMultiVariants } from './agents/content-agent'
+import { triggerAmplificationCascade } from './agents/amplification-agent'
 
 // Mock data for demonstration - replace with Supabase when connected
 let _idCounter = 1
@@ -61,6 +64,14 @@ const sampleContent: ContentItem[] = [
     status: 'approved',
     scheduledFor: from(2 * H),
     createdAt: REF,
+    variantGroupId: 'vg-alpha-101',
+    tone: 'hype',
+    format: 'hook',
+    onScreenHook: 'Wait for the beat drop at 0:15...',
+    visualDirection: 'Fast jump cuts synced with kick drums. Neon rim lighting, eye-level stare.',
+    viralStatus: 'viral_spike',
+    velocityScore: 3.42,
+    engagement: { views: 42890, likes: 6420, comments: 842, shares: 1420, saves: 3100, clicks: 520, reach: 51200 },
   },
   {
     id: 'content-2',
@@ -72,6 +83,13 @@ const sampleContent: ContentItem[] = [
     status: 'pending',
     scheduledFor: from(4 * H),
     createdAt: REF,
+    variantGroupId: 'vg-alpha-101',
+    tone: 'storytelling',
+    format: 'statement',
+    onScreenHook: 'We made this in a bedroom at 3 AM',
+    visualDirection: 'Dim bedroom lighting, slow camera pan across synth and headphones.',
+    viralStatus: 'normal',
+    velocityScore: 0.85,
   },
   {
     id: 'content-3',
@@ -82,6 +100,13 @@ const sampleContent: ContentItem[] = [
     hashtags: ['#NewMusic', '#NowPlaying'],
     status: 'pending',
     createdAt: REF,
+    variantGroupId: 'vg-alpha-101',
+    tone: 'controversial',
+    format: 'question',
+    onScreenHook: 'Is Pop music officially back?',
+    visualDirection: 'Direct quote graphic paired with Spotify soundwave animation.',
+    viralStatus: 'normal',
+    velocityScore: 0.42,
   },
 ]
 
@@ -247,6 +272,53 @@ export const store = {
   },
   deleteContent: (id: string) => {
     contentQueue = contentQueue.filter((c) => c.id !== id)
+  },
+
+  // v1.5 Multi-Variant & Amplification Engine
+  generateVariantsForSong: (params: {
+    songTitle: string
+    artist?: string
+    genre: string
+    mood: string
+    platform: Platform
+    campaignId?: string
+    variantCount?: number
+  }) => {
+    const variants = generateMultiVariants(params)
+    variants.forEach((v) => contentQueue.push(v))
+    store.addLog({
+      agentType: 'content',
+      action: 'Multi-Variants Generated',
+      details: `Synthesized ${variants.length} multi-variant angles with visual hooks for ${params.platform}`,
+      status: 'success',
+    })
+    return variants
+  },
+
+  triggerViralCascade: (contentId?: string) => {
+    const target = contentId
+      ? contentQueue.find((c) => c.id === contentId)
+      : contentQueue.find((c) => c.viralStatus === 'viral_spike') || contentQueue[0]
+
+    if (!target) return null
+
+    target.viralStatus = 'viral_spike'
+    target.velocityScore = 3.65
+
+    const cascade = triggerAmplificationCascade(target)
+    if (cascade.triggered && cascade.derivativesCreated.length > 0) {
+      cascade.derivativesCreated.forEach((d) => contentQueue.unshift(d))
+      target.viralStatus = 'amplified'
+
+      store.addLog({
+        agentType: 'analytics',
+        action: 'Viral Velocity Spike (Z=3.65)',
+        details: `Spike detected on ${target.platform}. Autonomous cascade dispatched ${cascade.derivativesCreated.length} derivative cuts.`,
+        status: 'success',
+      })
+    }
+
+    return cascade
   },
 
   // Posts

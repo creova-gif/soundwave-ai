@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Clock, CheckCircle, Edit, Trash2, Plus, Sparkles, Send } from 'lucide-react'
+import { Clock, CheckCircle, Edit, Trash2, Plus, Sparkles, Send, Flame, Zap, TrendingUp, Layers, Video } from 'lucide-react'
 import { store } from '@/lib/store'
 import { PlatformIcon } from '@/components/icons/platform-icons'
 import type { ContentItem, Platform } from '@/lib/types'
@@ -39,11 +39,19 @@ const statusConfig = {
   failed: { label: 'Failed', color: 'bg-destructive/15 text-destructive border-destructive/20' },
 }
 
+const toneLabels: Record<string, { label: string; color: string }> = {
+  hype: { label: 'HYPE', color: 'bg-amber-500/15 text-amber-400 border-amber-500/20' },
+  emotional: { label: 'EMOTIONAL', color: 'bg-purple-500/15 text-purple-400 border-purple-500/20' },
+  storytelling: { label: 'STORY', color: 'bg-blue-500/15 text-blue-400 border-blue-500/20' },
+  controversial: { label: 'HOT TAKE', color: 'bg-rose-500/15 text-rose-400 border-rose-500/20' },
+}
+
 export default function ContentPage() {
   const [contentQueue, setContentQueue] = useState(store.getContentQueue())
   const [filter, setFilter] = useState<'all' | Platform>('all')
   const [statusFilter, setStatusFilter] = useState<'all' | ContentItem['status']>('all')
   const [isGenerating, setIsGenerating] = useState(false)
+  const [isSpiking, setIsSpiking] = useState(false)
   const [newContent, setNewContent] = useState({
     platform: 'tiktok' as Platform,
     content: '',
@@ -79,9 +87,31 @@ export default function ContentPage() {
     setNewContent({ platform: 'tiktok', content: '', hashtags: '' })
   }
 
+  const handleGenerateMultiVariants = async () => {
+    setIsGenerating(true)
+    await new Promise((r) => setTimeout(r, 600))
+    store.generateVariantsForSong({
+      songTitle: 'Summer Vibes',
+      genre: 'Pop',
+      mood: 'Energetic',
+      platform: 'tiktok',
+      variantCount: 6,
+    })
+    setContentQueue([...store.getContentQueue()])
+    setIsGenerating(false)
+  }
+
+  const handleSimulateViralCascade = async () => {
+    setIsSpiking(true)
+    await new Promise((r) => setTimeout(r, 600))
+    store.triggerViralCascade()
+    setContentQueue([...store.getContentQueue()])
+    setIsSpiking(false)
+  }
+
   const handleGenerateAI = async () => {
     setIsGenerating(true)
-    await new Promise((r) => setTimeout(r, 2000))
+    await new Promise((r) => setTimeout(r, 1000))
     const platforms: Platform[] = ['tiktok', 'instagram', 'twitter']
     platforms.forEach((platform) => {
       store.addContent({
@@ -114,10 +144,23 @@ export default function ContentPage() {
           <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Content Queue</h1>
           <p className="text-muted-foreground">{contentQueue.length} items in queue</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={handleGenerateMultiVariants} disabled={isGenerating}>
+            <Layers className={`mr-2 h-4 w-4 text-primary ${isGenerating ? 'animate-spin' : ''}`} />
+            {isGenerating ? 'Synthesizing...' : 'Synthesize 6 Multi-Variants'}
+          </Button>
+          <Button
+            variant="outline"
+            className="border-orange-500/40 text-orange-400 hover:bg-orange-500/10"
+            onClick={handleSimulateViralCascade}
+            disabled={isSpiking}
+          >
+            <Flame className={`mr-2 h-4 w-4 text-orange-500 ${isSpiking ? 'animate-bounce' : ''}`} />
+            {isSpiking ? 'Spiking...' : 'Simulate Viral Spike (Z=3.65)'}
+          </Button>
           <Button variant="outline" onClick={handleGenerateAI} disabled={isGenerating}>
-            <Sparkles className={`mr-2 h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
-            {isGenerating ? 'Generating...' : 'Generate with AI'}
+            <Sparkles className="mr-2 h-4 w-4" />
+            Generate Single
           </Button>
           <Dialog>
             <DialogTrigger asChild>
@@ -219,24 +262,76 @@ export default function ContentPage() {
             >
               <Card className="h-full hover:border-border/80 transition-colors">
                 <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <Badge
-                      className={`flex items-center gap-1.5 border ${platformColors[item.platform]}`}
-                      variant="secondary"
-                    >
-                      <PlatformIcon platform={item.platform} size={11} />
-                      {platformLabels[item.platform]}
-                    </Badge>
-                    <Badge
-                      className={`border ${statusConfig[item.status].color}`}
-                      variant="secondary"
-                    >
-                      {statusConfig[item.status].label}
-                    </Badge>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <Badge
+                        className={`flex items-center gap-1.5 border ${platformColors[item.platform]}`}
+                        variant="secondary"
+                      >
+                        <PlatformIcon platform={item.platform} size={11} />
+                        {platformLabels[item.platform]}
+                      </Badge>
+                      <Badge
+                        className={`border ${statusConfig[item.status].color}`}
+                        variant="secondary"
+                      >
+                        {statusConfig[item.status].label}
+                      </Badge>
+                    </div>
+
+                    {/* Viral Spikes, Lineage & Tone Tags */}
+                    <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                      {item.viralStatus === 'viral_spike' && (
+                        <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/40 flex items-center gap-1 font-semibold text-[10px] animate-pulse">
+                          <Flame className="h-3 w-3 text-orange-400" />
+                          VIRAL SPIKE (Z={item.velocityScore || 3.42})
+                        </Badge>
+                      )}
+                      {item.viralStatus === 'amplified' && (
+                        <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 flex items-center gap-1 text-[10px]">
+                          <Zap className="h-3 w-3 text-purple-400" />
+                          AMPLIFIED
+                        </Badge>
+                      )}
+                      {item.isDerivative && (
+                        <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 flex items-center gap-1 text-[10px]">
+                          <TrendingUp className="h-3 w-3 text-emerald-400" />
+                          AUTO-AMPLIFIED
+                        </Badge>
+                      )}
+                      {item.tone && toneLabels[item.tone] && (
+                        <Badge variant="outline" className={`text-[10px] uppercase font-mono ${toneLabels[item.tone].color}`}>
+                          {toneLabels[item.tone].label}
+                        </Badge>
+                      )}
+                      {item.format && (
+                        <Badge variant="outline" className="text-[10px] uppercase text-muted-foreground">
+                          {item.format}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-3">
+                  {/* Visual Scaffolding & On-Screen Hook */}
+                  {item.onScreenHook && (
+                    <div className="rounded-md border border-primary/25 bg-primary/5 p-2.5">
+                      <div className="flex items-center gap-1.5 text-[11px] font-semibold text-primary mb-1">
+                        <Video className="h-3 w-3" />
+                        <span>ON-SCREEN HOOK (FIRST 3s)</span>
+                      </div>
+                      <p className="text-xs font-semibold text-foreground italic">"{item.onScreenHook}"</p>
+                    </div>
+                  )}
+
+                  {item.visualDirection && (
+                    <p className="text-[11px] text-muted-foreground bg-muted/30 rounded p-1.5 border border-border/50">
+                      <strong className="text-foreground">Visual Cue:</strong> {item.visualDirection}
+                    </p>
+                  )}
+
                   <p className="text-sm text-foreground leading-relaxed">{item.content}</p>
+
                   <div className="flex flex-wrap gap-1">
                     {item.hashtags.map((tag) => (
                       <span key={tag} className="text-xs text-primary font-medium">
@@ -244,7 +339,16 @@ export default function ContentPage() {
                       </span>
                     ))}
                   </div>
-                  <div className="flex items-center justify-between border-t border-border pt-4">
+
+                  {item.engagement && (
+                    <div className="flex items-center gap-3 text-[11px] text-muted-foreground border-t border-border/50 pt-2">
+                      <span><strong>{item.engagement.views.toLocaleString()}</strong> views</span>
+                      <span><strong>{item.engagement.saves.toLocaleString()}</strong> saves</span>
+                      <span><strong>{item.engagement.shares.toLocaleString()}</strong> shares</span>
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between border-t border-border pt-3">
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Clock className="h-3 w-3" />
                       {formatTime(item.scheduledFor)}

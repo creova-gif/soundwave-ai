@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Clock, CheckCircle, Edit, Trash2 } from 'lucide-react'
+import { Clock, CheckCircle, Edit, Trash2, Flame, Zap } from 'lucide-react'
 import { PlatformIcon } from '@/components/icons/platform-icons'
 import type { ContentItem, Platform } from '@/lib/types'
 import Link from 'next/link'
@@ -60,17 +60,36 @@ export function ContentQueuePreview({ items }: ContentQueuePreviewProps) {
         {items.slice(0, 3).map((item) => (
           <div key={item.id} className="rounded-lg border border-border bg-secondary/20 p-3 transition-colors hover:bg-secondary/40">
             <div className="mb-2 flex items-start justify-between gap-2">
-              <Badge
-                className={`flex items-center gap-1.5 border ${platformColors[item.platform]}`}
-                variant="secondary"
-              >
-                <PlatformIcon platform={item.platform} size={11} />
-                {platformLabels[item.platform]}
-              </Badge>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <Badge
+                  className={`flex items-center gap-1.5 border ${platformColors[item.platform]}`}
+                  variant="secondary"
+                >
+                  <PlatformIcon platform={item.platform} size={11} />
+                  {platformLabels[item.platform]}
+                </Badge>
+                {item.viralStatus === 'viral_spike' && (
+                  <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30 flex items-center gap-1 text-[10px] animate-pulse">
+                    <Flame className="h-3 w-3" />
+                    VIRAL SPIKE (Z={item.velocityScore || 3.42})
+                  </Badge>
+                )}
+                {item.isDerivative && (
+                  <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 flex items-center gap-1 text-[10px]">
+                    <Zap className="h-3 w-3" />
+                    AMPLIFIED
+                  </Badge>
+                )}
+              </div>
               <Badge className={`border ${statusConfig[item.status].color}`} variant="secondary">
                 {statusConfig[item.status].label}
               </Badge>
             </div>
+            {item.onScreenHook && (
+              <p className="mb-1.5 text-xs font-semibold text-primary italic">
+                Hook: "{item.onScreenHook}"
+              </p>
+            )}
             <p className="mb-2 line-clamp-2 text-sm text-foreground">{item.content}</p>
             <div className="flex flex-wrap gap-1 mb-2">
               {item.hashtags.slice(0, 3).map((tag) => (

@@ -41,6 +41,17 @@ export const campaigns = pgTable('campaigns', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
 
+export const audioClips = pgTable('audio_clips', {
+  id: serial('id').primaryKey(),
+  campaignId: integer('campaign_id').notNull().references(() => campaigns.id, { onDelete: 'cascade' }),
+  type: varchar('type', { length: 50 }).notNull(), // 'drop' | 'hook' | 'intro' | 'verse'
+  startTimeSeconds: numeric('start_time_seconds', { precision: 8, scale: 2 }).notNull(),
+  endTimeSeconds: numeric('end_time_seconds', { precision: 8, scale: 2 }).notNull(),
+  label: varchar('label', { length: 255 }).notNull(),
+  audioUrl: text('audio_url').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
 export const contentItems = pgTable('content_items', {
   id: serial('id').primaryKey(),
   campaignId: integer('campaign_id').notNull().references(() => campaigns.id, { onDelete: 'cascade' }),
@@ -53,6 +64,14 @@ export const contentItems = pgTable('content_items', {
   scheduledFor: timestamp('scheduled_for'),
   tone: varchar('tone', { length: 50 }),
   format: varchar('format', { length: 50 }),
+  variantGroupId: varchar('variant_group_id', { length: 64 }),
+  onScreenHook: text('on_screen_hook'),
+  visualDirection: text('visual_direction'),
+  audioClipId: integer('audio_clip_id').references(() => audioClips.id),
+  parentContentId: integer('parent_content_id'),
+  isDerivative: boolean('is_derivative').default(false),
+  viralStatus: varchar('viral_status', { length: 30 }).default('normal'), // 'normal' | 'monitoring' | 'viral_spike' | 'amplified'
+  velocityScore: numeric('velocity_score', { precision: 6, scale: 2 }).default('0'),
   views: integer('views').default(0),
   likes: integer('likes').default(0),
   comments: integer('comments').default(0),
@@ -74,6 +93,17 @@ export const agentQuotas = pgTable('agent_quotas', {
 }, (table) => [
   uniqueIndex('agent_quotas_user_bucket_idx').on(table.userId, table.bucket),
 ])
+
+export const contentMetricsSnapshots = pgTable('content_metrics_snapshots', {
+  id: serial('id').primaryKey(),
+  contentItemId: integer('content_item_id').notNull().references(() => contentItems.id, { onDelete: 'cascade' }),
+  views: integer('views').default(0).notNull(),
+  likes: integer('likes').default(0).notNull(),
+  comments: integer('comments').default(0).notNull(),
+  shares: integer('shares').default(0).notNull(),
+  saves: integer('saves').default(0).notNull(),
+  snapshotTime: timestamp('snapshot_time').defaultNow().notNull(),
+})
 
 export const agentLogs = pgTable('agent_logs', {
   id: serial('id').primaryKey(),
@@ -108,11 +138,26 @@ export const agentLogsRelations = relations(agentLogs, ({ one }) => ({
   user: one(users, { fields: [agentLogs.userId], references: [users.id] }),
 }))
 
+export const audioClipsRelations = relations(audioClips, ({ one, many }) => ({
+  campaign: one(campaigns, { fields: [audioClips.campaignId], references: [campaigns.id] }),
+  contentItems: many(contentItems),
+}))
+
+export const contentMetricsSnapshotsRelations = relations(contentMetricsSnapshots, ({ one }) => ({
+  contentItem: one(contentItems, { fields: [contentMetricsSnapshots.contentItemId], references: [contentItems.id] }),
+}))
+
 export type User = typeof users.$inferSelect
 export type InsertUser = typeof users.$inferInsert
 export type Campaign = typeof campaigns.$inferSelect
 export type InsertCampaign = typeof campaigns.$inferInsert
+export type AudioClip = typeof audioClips.$inferSelect
+export type InsertAudioClip = typeof audioClips.$inferInsert
 export type ContentItem = typeof contentItems.$inferSelect
 export type InsertContentItem = typeof contentItems.$inferInsert
+export type ContentMetricsSnapshot = typeof contentMetricsSnapshots.$inferSelect
+export type InsertContentMetricsSnapshot = typeof contentMetricsSnapshots.$inferInsert
+export type AgentQuota = typeof agentQuotas.$inferSelect
+export type InsertAgentQuota = typeof agentQuotas.$inferInsert
 export type AgentLog = typeof agentLogs.$inferSelect
 export type InsertAgentLog = typeof agentLogs.$inferInsert

@@ -161,45 +161,23 @@ function getOptimalTime(platform: Platform): string {
   return times[platform]
 }
 
-// Export a function to run content generation
+// Export a function to run single-post generation
 export async function generateContent(
   songTitle: string,
   genre: string,
   mood: string,
   platforms: Platform[]
 ): Promise<ContentItem[]> {
-  const agent = createContentAgent()
   const results: ContentItem[] = []
 
   for (const platform of platforms) {
-    // Generate caption
-    const captionResult = await agent.run({
-      messages: [
-        {
-          role: 'user',
-          content: `Generate a viral caption for "${songTitle}" (${genre}, ${mood} mood) for ${platform}. Use the generateCaption tool.`,
-        },
-      ],
-    })
-
-    // Generate hashtags
-    const hashtagResult = await agent.run({
-      messages: [
-        {
-          role: 'user',
-          content: `Generate optimal hashtags for ${platform} for a ${genre} ${mood} song. Use the generateHashtags tool.`,
-        },
-      ],
-    })
-
-    // Parse results and create content item
     const content: ContentItem = {
       id: `gen-${Date.now()}-${platform}`,
       campaignId: 'campaign-1',
       type: 'full_post',
       platform,
       content: `AI-generated caption for ${songTitle} on ${platform}`,
-      hashtags: ['#NewMusic', '#NowPlaying', `#${genre}`],
+      hashtags: ['#NewMusic', '#NowPlaying', `#${genre.replace(/\s+/g, '')}`],
       status: 'pending',
       createdAt: new Date(),
     }
@@ -207,4 +185,124 @@ export async function generateContent(
   }
 
   return results
+}
+
+export interface GenerateMultiVariantsParams {
+  songTitle: string
+  artist?: string
+  genre: string
+  mood: string
+  platform: Platform
+  campaignId?: string
+  clipLabel?: string
+  variantCount?: number
+}
+
+// Generate 5-10 Multi-Variant outputs with visual scaffolding & tone tagging
+export function generateMultiVariants(params: GenerateMultiVariantsParams): ContentItem[] {
+  const {
+    songTitle,
+    artist = 'Artist',
+    genre,
+    mood,
+    platform,
+    campaignId = 'campaign-1',
+    clipLabel = 'The Beat Drop',
+    variantCount = 6,
+  } = params
+
+  const variantGroupId = `vg-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 7)}`
+  const variants: ContentItem[] = []
+
+  const templates: Array<{
+    tone: ContentItem['tone']
+    format: ContentItem['format']
+    hook: string
+    visual: string
+    caption: string
+  }> = [
+    {
+      tone: 'hype',
+      format: 'hook',
+      hook: `Wait for the switch at 0:15...`,
+      visual: `Fast-paced jump cuts sync with kick drums. Neon rim lighting, direct-to-lens stare.`,
+      caption: `Turn the volume all the way up for this one. "${songTitle}" hits completely different on good speakers. Which platform did you find this on?`,
+    },
+    {
+      tone: 'emotional',
+      format: 'statement',
+      hook: `I wrote this when I was about to quit music.`,
+      visual: `Muted color grading, handheld 35mm grain. Solo shot in dim bedroom with audio waveform reflected in window.`,
+      caption: `Almost didn't release "${songTitle}". Sometimes the songs that scare you the most are the ones you need to put out into the world.`,
+    },
+    {
+      tone: 'storytelling',
+      format: 'question',
+      hook: `What if this was the last song of summer?`,
+      visual: `Golden hour sunset drive, camera mounted on passenger side. Windows down, volume knob turned to max.`,
+      caption: `Every summer needs that one unforgettable soundtrack. Is "${songTitle}" going on your playlist this weekend?`,
+    },
+    {
+      tone: 'controversial',
+      format: 'statement',
+      hook: `People said ${genre} was dead. We proved them wrong.`,
+      visual: `Split screen: Top half shows DAW project with 80+ tracks, bottom half shows live crowd reacting to the drop.`,
+      caption: `They told us nobody listens to raw ${genre} anymore. "${songTitle}" is climbing the charts anyway. Proof that real production always wins.`,
+    },
+    {
+      tone: 'hype',
+      format: 'cta',
+      hook: `Duet this with your favorite guitar solo`,
+      visual: `Vertical 9:16 split-screen layout with left half open for user Duet/Remix. Waveform active at bottom.`,
+      caption: `Open verse / duet challenge for "${songTitle}"! Show us what you'd add to this rhythm. Best submissions get pinned.`,
+    },
+    {
+      tone: 'storytelling',
+      format: 'hook',
+      hook: `POV: You made a beat at 3 AM and it sounds like this`,
+      visual: `Low-angle shot looking up at the producer desk, ambient studio purple hue, head nod starting subtle then locking in.`,
+      caption: `Late night sessions always hit different. "${songTitle}" started from a 10-second voice memo. Out everywhere now.`,
+    },
+  ]
+
+  const count = Math.min(variantCount, templates.length)
+
+  for (let i = 0; i < count; i++) {
+    const t = templates[i]
+    variants.push({
+      id: `variant-${variantGroupId}-${i + 1}`,
+      campaignId,
+      platform,
+      type: 'full_post',
+      content: t.caption,
+      hashtags: [
+        `#${genre.replace(/\s+/g, '')}`,
+        `#${mood.replace(/\s+/g, '')}Vibes`,
+        '#NewMusic',
+        '#SoundWaveAI',
+        '#FYP',
+      ],
+      status: 'pending',
+      scheduledFor: new Date(Date.now() + (i + 1) * 3 * 3600 * 1000), // staggered every 3 hours
+      createdAt: new Date(),
+      variantGroupId,
+      tone: t.tone,
+      format: t.format,
+      onScreenHook: t.hook,
+      visualDirection: t.visual,
+      viralStatus: 'normal',
+      velocityScore: 0,
+      engagement: {
+        views: 0,
+        likes: 0,
+        comments: 0,
+        shares: 0,
+        saves: 0,
+        clicks: 0,
+        reach: 0,
+      },
+    })
+  }
+
+  return variants
 }

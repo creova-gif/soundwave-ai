@@ -26,6 +26,32 @@ export interface Campaign {
   createdAt: Date
 }
 
+export type ContentTone = 'emotional' | 'hype' | 'storytelling' | 'controversial'
+export type ContentFormat = 'question' | 'statement' | 'hook' | 'cta'
+export type ViralStatus = 'normal' | 'monitoring' | 'viral_spike' | 'amplified'
+
+export interface AudioClip {
+  id: string
+  campaignId: string
+  type: 'drop' | 'hook' | 'intro' | 'verse'
+  startTimeSeconds: number
+  endTimeSeconds: number
+  label: string
+  audioUrl: string
+  createdAt: Date
+}
+
+export interface ContentMetricsSnapshot {
+  id: string
+  contentItemId: string
+  views: number
+  likes: number
+  comments: number
+  shares: number
+  saves: number
+  snapshotTime: Date
+}
+
 export interface ContentItem {
   id: string
   campaignId: string
@@ -37,6 +63,16 @@ export interface ContentItem {
   scheduledFor?: Date
   createdAt: Date
   engagement?: EngagementMetrics
+  tone?: ContentTone
+  format?: ContentFormat
+  variantGroupId?: string
+  onScreenHook?: string
+  visualDirection?: string
+  audioClipId?: string
+  parentContentId?: string
+  isDerivative?: boolean
+  viralStatus?: ViralStatus
+  velocityScore?: number
 }
 
 export interface Post {

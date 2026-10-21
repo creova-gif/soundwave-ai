@@ -254,3 +254,97 @@ export async function getAnalyticsSummary() {
     totalPosts: 47,
   }
 }
+
+/**
+ * Calculates weighted engagement score:
+ * Shares (4x) > Saves (3x) > Comments (2x) > Likes (1x)
+ */
+export function computeWeightedEngagement(metrics: {
+  shares: number
+  saves: number
+  comments: number
+  likes: number
+}): number {
+  return (metrics.shares * 4) + (metrics.saves * 3) + (metrics.comments * 2) + (metrics.likes * 1)
+}
+
+/**
+ * Mathematical Z-Score velocity calculation over normalized historical windows.
+ * Z = (Actual - Mean) / StandardDeviation
+ */
+export function calculateZScore(
+  currentScore: number,
+  historicalScores: number[]
+): number {
+  if (historicalScores.length < 2) {
+    // Insufficient history for accurate standard deviation: return conservative score
+    return currentScore > 1000 ? 2.5 : 0.5
+  }
+
+  const mean = historicalScores.reduce((sum, val) => sum + val, 0) / historicalScores.length
+  const variance =
+    historicalScores.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) /
+    (historicalScores.length - 1)
+  const stdDev = Math.sqrt(variance)
+
+  if (stdDev === 0) {
+    return currentScore > mean ? 3.0 : 0.0
+  }
+
+  const z = (currentScore - mean) / stdDev
+  return Number(z.toFixed(2))
+}
+
+export interface ViralSignalEvaluation {
+  zScore: number
+  weightedScore: number
+  status: 'normal' | 'elevated' | 'viral_spike'
+  shouldCascade: boolean
+  confidence: number
+  recommendedAction: string
+}
+
+/**
+ * Evaluates whether an active post is accelerating into a viral trajectory.
+ * Triggered periodically (e.g. at 15m, 45m, 90m marks).
+ */
+export function evaluateViralSignal(
+  currentMetrics: { shares: number; saves: number; comments: number; likes: number },
+  historicalBatch: Array<{ shares: number; saves: number; comments: number; likes: number }>
+): ViralSignalEvaluation {
+  const currentWeighted = computeWeightedEngagement(currentMetrics)
+  const historicalWeighted = historicalBatch.map(computeWeightedEngagement)
+
+  const zScore = calculateZScore(currentWeighted, historicalWeighted)
+
+  if (zScore >= 2.5) {
+    return {
+      zScore,
+      weightedScore: currentWeighted,
+      status: 'viral_spike',
+      shouldCascade: true,
+      confidence: Math.min(99, Math.round(80 + zScore * 5)),
+      recommendedAction: 'Immediate autonomous cascade: Synthesize and dispatch derivative cuts across secondary platforms.',
+    }
+  }
+
+  if (zScore >= 1.0) {
+    return {
+      zScore,
+      weightedScore: currentWeighted,
+      status: 'elevated',
+      shouldCascade: false,
+      confidence: 65,
+      recommendedAction: 'Increase polling frequency to 15m. Watch for save rate and share velocity acceleration.',
+    }
+  }
+
+  return {
+    zScore,
+    weightedScore: currentWeighted,
+    status: 'normal',
+    shouldCascade: false,
+    confidence: 50,
+    recommendedAction: 'Standard performance trajectory. Maintain standard posting schedule.',
+  }
+}
